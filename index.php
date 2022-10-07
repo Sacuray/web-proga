@@ -235,7 +235,7 @@
     function isDotInsideOrOnEdgeOfArea($x, $y, $r){
         $res = false;
         if ($x >= 0.0){
-            if($y > 0.0 and ($x^2.0 + $y^2.0) <= ($r^2.0)/4.0){
+            if($y >= 0.0 and ($x*$x + $y*$y) <= ($r*$r)/4.0){
                 $res = true;
             }
             if($y <= 0.0 and $x <= $r and $y >= -$r){
@@ -257,32 +257,37 @@
         if ($y > 3 || $y < -3) {
             return false;
         }
+        if($x > 4  || $x < -4 || !is_int($x)){return false;}
+        if($r > 3 || $r < -3 || !is_int($r * 2)){return false;}
         return true;
     }
 
     $t_start = microtime(true);
 
     if (isset($_POST["X"]) && isset($_POST["Y"]) && isset($_POST["R"])) {
-        $x = $_POST["X"];
-        $y = $_POST["Y"];
         $r = $_POST["R"];
-        if(isDotInsideOrOnEdgeOfArea($x, $y, $r)) echo "Точка находится <u>внутри</u> или <u>на границе</u> области.";
-        else echo "Точка находится <u>за пределами</u> заданной области.";
-        $file = fopen("database.csv", "a+");
-        if(filesize("database.csv") == 0) {
-            fwrite($file, "date_time,x,y,r,dot_position\n");
-        }
-        fwrite(
-            $file,
-            date_format(date_create(), "d.m.Y г.; H:i")
-            .",".$x
-            .",".strval(floatval($y))
-            .",".$r
-            .",".var_export(isDotInsideOrOnEdgeOfArea($x, $y, $r), true)."\n"
-        );
-        fclose($file);
+        $y = $_POST["Y"];
+        $x = $_POST["X"];
+        if(validateQuery($x, $y, $r)) echo "Полученные данные некорректны";
+        else{
+            if(isDotInsideOrOnEdgeOfArea($x, $y, $r)) echo "Точка находится <u>внутри</u> или <u>на границе</u> области.";
+            else echo "Точка находится <u>за пределами</u> заданной области.";
+            $file = fopen("database.csv", "a+");
+            if(filesize("database.csv") == 0) {
+                fwrite($file, "date_time,x,y,r,dot_position\n");
+            }
+            fwrite(
+                $file,
+                date_format(date_create(), "d.m.Y г.; H:i")
+                .",".$x
+                .",".strval(floatval($y))
+                .",".$r
+                .",".var_export(isDotInsideOrOnEdgeOfArea($x, $y, $r), true)."\n"
+            );
+            fclose($file);
 
-        $t_end = microtime(true);
+            $t_end = microtime(true);
+        }
 
     }
 
